@@ -1,6 +1,8 @@
 package codec
 
-import "io"
+import (
+	"io"
+)
 
 type String string
 
@@ -9,7 +11,7 @@ func (s *String) Decode(r io.Reader) error {
 	if err := length.Decode(r); err != nil {
 		return err
 	}
-	if length <= 0 {
+	if length < 0 {
 		return ErrCodecStringTooSmall
 	}
 	if length > 131071 {

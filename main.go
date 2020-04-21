@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/DiscoreMe/minego/protocol/codec"
+	"github.com/DiscoreMe/minego/core"
+	"github.com/DiscoreMe/minego/protocol/packet"
+	"github.com/DiscoreMe/minego/server"
 	"net"
 )
 
@@ -12,35 +14,20 @@ func main() {
 		panic(err)
 	}
 
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			panic(err)
-		}
-		go handleRequest(conn)
+	serv := server.NewServer(ln)
+
+	serv.ErrHandler = func(err error) {
+		fmt.Println("err: ", err)
+	}
+
+	serv.HandleFunc(&packet.Handshake{}, core.HandlerHandshake)
+
+	if err := serv.Listen(); err != nil {
+		panic(err)
 	}
 }
 
-func handleRequest(conn net.Conn) {
-	defer conn.Close()
-
-	var servPort codec.UShort
-	if err := servPort.Decode(conn); err != nil {
-		fmt.Println("Error reading:", err.Error())
-		return
-	}
-
-	var protoVersion codec.VarInt
-	if err := protoVersion.Decode(conn); err != nil {
-		fmt.Println("Error reading:", err.Error())
-		return
-	}
-
-	var servAddress codec.String
-	if err := servAddress.Decode(conn); err != nil {
-		fmt.Println("Error reading:", err.Error())
-		return
-	}
-
-	fmt.Printf("Protocol Version: %d\nServer Address: %s\nServer Port: %d\n", protoVersion, servAddress, servPort)
+func handshakeFunc() error {
+	fmt.Println("call handshakeFunc")
+	return nil
 }
