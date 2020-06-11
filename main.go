@@ -20,14 +20,11 @@ func main() {
 		fmt.Println("err: ", err)
 	}
 
-	serv.HandleFunc(&packet.Handshake{}, core.HandlerHandshake)
+	serv.HandleFunc(&packet.Handshake{}, core.HandleHandshake)
+	serv.HandleFunc(&packet.LegacyHandshaking{}, core.LegacyHandleHandshake)
+	serv.HandleFunc(&packet.Serverbound{}, core.HandleServerbound)
 
 	if err := serv.Listen(); err != nil {
 		panic(err)
 	}
-}
-
-func handshakeFunc() error {
-	fmt.Println("call handshakeFunc")
-	return nil
 }

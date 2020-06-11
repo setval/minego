@@ -5,11 +5,11 @@ import (
 	"io"
 )
 
-type VarInt int32
+type VarLong int64
 
-func (v *VarInt) Decode(r io.Reader) error {
+func (v *VarLong) Decode(r io.Reader) error {
 	var num int8 = 0
-	var result int32 = 0
+	var result int64 = 0
 	for {
 		var b uint8
 		if err := binary.Read(r, binary.BigEndian, &b); err != nil {
@@ -17,25 +17,25 @@ func (v *VarInt) Decode(r io.Reader) error {
 		}
 
 		value := b & 0x7F
-		result |= int32(uint(value) << uint(7*num))
+		result |= int64(uint64(value) << uint64(7*num))
 
 		num++
-		if num > 5 {
-			return ErrCodecVarIntTooBig
+		if num > 10 {
+			return ErrCodecVarLongTooBig
 		}
 
 		if b&0x80 == 0 {
 			break
 		}
 	}
-	*v = VarInt(result)
+	*v = VarLong(result)
 	return nil
 }
 
-func (v VarInt) Encode(w io.Writer) error {
+func (v VarLong) Encode(w io.Writer) error {
 	var num = v
 	for {
-		b := num & 0x7F
+		b := uint16(num & 0x7F)
 		num >>= 7
 		if num != 0 {
 			b |= 0x80
